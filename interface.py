@@ -1,5 +1,11 @@
 #pyChat - interface
 import tkinter as tk
+import tkinter.messagebox as messagebox
+
+class Error:
+    def __init__(self,title="Error 404",message="Error Not Found"):
+        messagebox.showerror(title=title,message=message)
+
 
 class Window:
     def __init__(self,title="tk"):
@@ -18,7 +24,8 @@ class Window:
         self.data = None
         
     def send(self,message):
-        self.data = message #bytes(message,"utf-8")
+        self.data = message.replace("|","¦") #bytes(message,"utf-8")
+        print(self.data)
         self.sending = True
 
     def receive(self,message):
@@ -56,6 +63,7 @@ class Inp:
         self.entry.delete(0, 'end')
 
 if __name__ == "__main__":
+    #new = Error("ConnectionResetError")
     window = Window("Client")
     while True:
         if window.sending:

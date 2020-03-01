@@ -18,10 +18,12 @@ import log
 #     player is.
 
 class GameServer(object):
-    def __init__(self, port=9009, max_num_players=5):
+    def __init__(self, addr="127.0.0.1", port=9009):
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.hostAddr = addr
+        self.hostPort = port
         # Bind to localhost - set to external ip to connect from other computers
-        self.listener.bind(("127.0.0.1", port))
+        self.listener.bind((self.hostAddr, self.hostPort))
         self.read_list = [self.listener]
         self.write_list = []
     
@@ -29,7 +31,7 @@ class GameServer(object):
         self.data = None
 
     def run(self):
-        print("Running...")
+        print("Running on '{}:{}'...".format(self.hostAddr,self.hostPort))
         while True:
             send = []
             readable, writable, exceptional = (select.select(self.read_list, self.write_list, []))
@@ -45,7 +47,7 @@ class GameServer(object):
                     elif cmd == "dis":
                         print("User at {} disconnected".format(addr))
                         send.append(["'{}' disconnected".format(":".join(map(str,addr))),"SERVER",log.time()])
-                        self.users.remove(addr)
+                        if addr in self.users: self.users.remove(addr)
                     elif cmd == "chat":
                         print("User at {} did {}".format(addr,msg))
                         send.append([msg[1],":".join(map(str,addr)),log.time()])
@@ -54,7 +56,6 @@ class GameServer(object):
                 print(item)
                 sendMessage = '|'.join(item)
                 self.listener.sendto(bytes(sendMessage,"utf-8"), user)
-#mes,user,time
 
 if __name__ == "__main__":
   g = GameServer()

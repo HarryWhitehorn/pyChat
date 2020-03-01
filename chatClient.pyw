@@ -43,8 +43,8 @@ class GameClient(object):
                 try:
                     self.window.root.update()
                 except interface.tk.TclError:
-                    print("user quit")
-                    break
+                    print("user quit (1)")
+                    running = False
         finally:
             self.conn.sendto(b"dis", (self.addr, self.serverport))
 
@@ -55,3 +55,4 @@ if __name__ == "__main__":
     window = interface.Window("Client")
     g = GameClient(window,log)
     g.run()
+    print("user quit (0)")
