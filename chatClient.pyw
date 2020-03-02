@@ -12,8 +12,8 @@ class GameClient(object):
         self.clientport = random.randrange(8000, 8999)
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # Bind to localhost - set to external ip to connect from other computers
-        self.conn.bind(("127.0.0.1", self.clientport))
         self.addr = addr
+        self.conn.bind((self.addr, self.clientport))
         self.serverport = serverport
         
         self.read_list = [self.conn]
@@ -53,6 +53,7 @@ class GameClient(object):
 if __name__ == "__main__":
     log = log.Log()
     window = interface.Window("Client")
-    g = GameClient(window,log)
+    severAddr = "192.168.0.105"
+    g = GameClient(window,log,severAddr)
     g.run()
     print("user quit (0)")

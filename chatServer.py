@@ -58,5 +58,6 @@ class GameServer(object):
                 self.listener.sendto(bytes(sendMessage,"utf-8"), user)
 
 if __name__ == "__main__":
-  g = GameServer()
-  g.run()
+    addr = socket.gethostbyname(socket.gethostname())
+    g = GameServer(addr)
+    g.run()
