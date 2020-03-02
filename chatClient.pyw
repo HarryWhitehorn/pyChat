@@ -13,6 +13,7 @@ class GameClient(object):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # Bind to localhost - set to external ip to connect from other computers
         self.addr = addr
+        #self.conn.connect((self.addr, self.clientport))
         self.conn.bind((self.addr, self.clientport))
         self.serverport = serverport
         
