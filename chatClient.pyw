@@ -6,15 +6,16 @@ import time
 import interface, log
 
 class GameClient(object):
-    def __init__(self, window, log, addr="127.0.0.1", serverport=9009):
+    def __init__(self, window, log, addr="127.0.0.1", serverport=9009, username="Mix"):
+        self.username = username
         self.window = window
         self.log = log
         self.clientport = random.randrange(8000, 8999)
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # Bind to localhost - set to external ip to connect from other computers
         self.addr = addr
-        #self.conn.connect((self.addr, self.clientport))
-        self.conn.bind((self.addr, self.clientport))
+        self.conn.bind((socket.gethostbyname(socket.gethostname()), self.clientport))
+        self.conn.connect((self.addr, serverport))
         self.serverport = serverport
         
         self.read_list = [self.conn]
@@ -25,7 +26,8 @@ class GameClient(object):
         running = True
         try:
         # Initialize connection to server
-            self.conn.sendto(b"new", (self.addr, self.serverport))
+            connectMsg = bytes("{}|{}".format("new",self.username),"utf-8")
+            self.conn.sendto(connectMsg, (self.addr, self.serverport))
             while running:
                 # select on specified file descriptors
                 readable, writable, exceptional = (
@@ -33,7 +35,7 @@ class GameClient(object):
                 )
                 for item in readable:
                     #if item is self.conn:
-                    msg, addr = item.recvfrom(64)
+                    msg = item.recv(1024)
                     msg = msg.decode("utf-8").split("|") 
                     self.log.add(*msg)
                     window.receive(self.log.data)
@@ -54,7 +56,8 @@ class GameClient(object):
 if __name__ == "__main__":
     log = log.Log()
     window = interface.Window("Client")
-    severAddr = "192.168.0.105"
-    g = GameClient(window,log,severAddr)
+    severAddr = "10.3.210.19"
+    username = input("Username: ")
+    g = GameClient(window,log,severAddr,username=username)
     g.run()
     print("user quit (0)")

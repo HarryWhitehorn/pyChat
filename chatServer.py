@@ -27,7 +27,7 @@ class GameServer(object):
         self.read_list = [self.listener]
         self.write_list = []
     
-        self.users = []
+        self.users = {}
         self.data = None
 
     def run(self):
@@ -37,24 +37,31 @@ class GameServer(object):
             readable, writable, exceptional = (select.select(self.read_list, self.write_list, []))
             for item in readable:
                 if item is self.listener:
-                    msg, addr = item.recvfrom(64)
+                    msg, addr = item.recvfrom(1024)
                     msg = msg.decode("utf-8").split("|")
                     cmd = msg[0]
                     if cmd == "new":
-                        print("New connection at {}".format(addr))
-                        send.append(["'{}' connected".format(":".join(map(str,addr))),"SERVER",log.time()])
-                        self.users.append(addr)
+                        if len(msg) == 1:
+                            username = ":".join(map(str,addr))
+                            print(username, msg)
+                        else:
+                            username = msg[1]
+                        self.users[addr] = username
+                        print("New connection by {} at {}".format(self.users[addr],addr))
+                        send.append(["'{}' connected at {}".format(self.users[addr],":".join(map(str,addr))),"SERVER",log.time()])
+                        print(self.users)
                     elif cmd == "dis":
-                        print("User at {} disconnected".format(addr))
+                        print("User at {} disconnected".format(addr))                        
                         send.append(["'{}' disconnected".format(":".join(map(str,addr))),"SERVER",log.time()])
-                        if addr in self.users: self.users.remove(addr)
+                        if addr in self.users: del self.users[addr]#.remove(addr)
                     elif cmd == "chat":
                         print("User at {} did {}".format(addr,msg))
-                        send.append([msg[1],":".join(map(str,addr)),log.time()])
+                        send.append([msg[1],self.users[addr],log.time()])
             for user in self.users:
               for item in send:
                 print(item)
                 sendMessage = '|'.join(item)
+                print("USER ->",user)
                 self.listener.sendto(bytes(sendMessage,"utf-8"), user)
 
 if __name__ == "__main__":

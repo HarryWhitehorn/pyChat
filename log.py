@@ -13,7 +13,8 @@ class Log:
     def add(self,message,user,time=None):
         if time == None:
             time = "<Error noTime>"
-        self.data += "{} '{}': {}\n".format(time,user,message)
+                #+=
+        self.data = "{} '{}': {}\n".format(time,user,message)
 
     def time(self):
         now = gmtime()

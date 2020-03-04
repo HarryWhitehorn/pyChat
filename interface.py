@@ -11,6 +11,7 @@ class Window:
     def __init__(self,title="tk"):
         self.root = tk.Tk()
         self.root.title(title)
+        self.root.geometry("500x500")
         self.out = Out(self.root)
         self.inp = Inp(self.root,output=self.send)
         #pack
@@ -22,23 +23,37 @@ class Window:
         #data
         self.sending = False
         self.data = None
+        self.root.bind('<Return>', self.inp.click)
+        
         
     def send(self,message):
         self.data = message.replace("|","¦") #bytes(message,"utf-8")
-        print(self.data)
         self.sending = True
 
     def receive(self,message):
         if type(message) == "bytes":
             message = message.decode("utf-8")
+        self.out.text.insert(tk.END, str(message))
+        """
+        if type(message) == "bytes":
+            message = message.decode("utf-8")
         self.out.text.config(text=message)
+        """
     
 class Out:
     def __init__(self,master,text="out"):
         self.frame = tk.LabelFrame(master,text=text)
-        self.text = tk.Label(self.frame,text="test",anchor='w', justify='left')
+        self.text = tk.Listbox(self.frame)
+        #self.text = tk.Label(self.frame,text="test\n\n\n\n\n\n\nhello",anchor='w', justify='left')
+        self.scroll = tk.Scrollbar(self.frame,command=self.text.yview)
         #pack
-        self.text.pack(anchor='w')
+        self.text.grid(row=0, column=0, sticky="NSWE")
+        self.scroll.grid(row=0, column=1, sticky="NSE")
+        self.frame.grid_columnconfigure(0,weight=100)
+        self.frame.grid_columnconfigure(1,weight=1)
+        self.frame.grid_rowconfigure(0,weight=1)
+            
+        
         
 
 class Inp:
@@ -50,12 +65,13 @@ class Inp:
         #grid
         self.entry.grid(row=0, column=0,sticky="NSEW")
         self.button.grid(row=0, column=1,sticky="NSW")
-        self.frame.grid_columnconfigure(0,weight=1)
-        self.frame.grid_rowconfigure(0,weight=1)
+        self.frame.grid_columnconfigure(0,weight=100)
         self.frame.grid_columnconfigure(1,weight=1)
+        #
+        
 
 
-    def click(self):
+    def click(self,*args):
         if self.output == None: 
             print(self.entry.get())
         else:
