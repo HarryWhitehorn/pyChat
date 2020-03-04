@@ -1,0 +1,14 @@
+{
+    "users": {
+        "username": {
+            "username": "userName!",
+            "password": "fd5cb51bafd60f6fdbedde6e62c473da6f247db271633e15919bab78a02ee9eb",
+            "adminLevel": 0
+        },
+        "harry": {
+            "username": "Harry!",
+            "password": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
+            "adminLevel": 1
+        }
+    }
+}

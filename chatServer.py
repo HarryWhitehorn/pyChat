@@ -2,7 +2,7 @@
 import socket
 import select
 import sys
-import log
+import log, commands, login
 
 # Messages:
 #  Client->Server
@@ -37,7 +37,7 @@ class GameServer(object):
             readable, writable, exceptional = (select.select(self.read_list, self.write_list, []))
             for item in readable:
                 if item is self.listener:
-                    msg, addr = item.recvfrom(1024)
+                    msg, addr = item.recvfrom(4096)
                     msg = msg.decode("utf-8").split("|")
                     cmd = msg[0]
                     if cmd == "new":
@@ -46,6 +46,9 @@ class GameServer(object):
                             print(username, msg)
                         else:
                             username = msg[1]
+                        data = login.load()
+                        if username.lower() in data["users"]:
+                            username = data["users"][username.lower()]["username"]
                         self.users[addr] = username
                         print("New connection by {} at {}".format(self.users[addr],addr))
                         send.append(["'{}' connected at {}".format(self.users[addr],":".join(map(str,addr))),"SERVER",log.time()])
@@ -55,16 +58,25 @@ class GameServer(object):
                         send.append(["'{}' disconnected".format(":".join(map(str,addr))),"SERVER",log.time()])
                         if addr in self.users: del self.users[addr]#.remove(addr)
                     elif cmd == "chat":
-                        print("User at {} did {}".format(addr,msg))
-                        send.append([msg[1],self.users[addr],log.time()])
+                        if msg[1][0] == "/":
+                            print(msg[1][1:])
+                            try:
+                                toEx = getattr(commands, msg[1][1:])(self.users[addr],self.users)
+                            except AttributeError:
+                                toEx = commands.formatter('Invalid Command')
+                            print("User at {} did {}".format(addr,msg))
+                            send.append([msg[1],self.users[addr],log.time()])
+                            eval(toEx)
+                        else:
+                            print("User at {} did {}".format(addr,msg))
+                            send.append([msg[1],self.users[addr],log.time()])
             for user in self.users:
               for item in send:
-                print(item)
                 sendMessage = '|'.join(item)
                 print("USER ->",user)
                 self.listener.sendto(bytes(sendMessage,"utf-8"), user)
 
 if __name__ == "__main__":
     addr = socket.gethostbyname(socket.gethostname())
-    g = GameServer(addr)
+    g = GameServer(addr,8080)
     g.run()

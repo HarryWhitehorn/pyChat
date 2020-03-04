@@ -3,10 +3,10 @@ import socket
 import select
 import random
 import time
-import interface, log
+import interface, log, login
 
 class GameClient(object):
-    def __init__(self, window, log, addr="127.0.0.1", serverport=9009, username="Mix"):
+    def __init__(self, window, log, addr="127.0.0.1", serverport=9009, username="Mix", password=""):
         self.username = username
         self.window = window
         self.log = log
@@ -35,10 +35,11 @@ class GameClient(object):
                 )
                 for item in readable:
                     #if item is self.conn:
-                    msg = item.recv(1024)
+                    msg = item.recv(2048)
                     msg = msg.decode("utf-8").split("|") 
+                    print(msg)
                     self.log.add(*msg)
-                    window.receive(self.log.data)
+                    self.window.receive(self.log.data)
                 if self.window.sending:
                     data = bytes("{}|{}".format("chat",self.window.data),"utf-8")
                     self.window.sending = False
@@ -54,10 +55,19 @@ class GameClient(object):
 
 
 if __name__ == "__main__":
+    valid = False
+    while not valid:
+        loginW = interface.LoginWindow()
+        loginW.root.mainloop()
+        data = loginW.data
+        username = data["username"]
+        password = data["password"]
+        serverAddr = data["addr"]
+        serverPort = data["port"]
+        valid = login.check(username,password)
+        print("Login Valid: {}".format(valid))
     log = log.Log()
-    window = interface.Window("Client")
-    severAddr = "10.3.210.19"
-    username = input("Username: ")
-    g = GameClient(window,log,severAddr,username=username)
+    window = interface.ChatWindow("Client")
+    g = GameClient(window,log,serverAddr,serverPort,username,password)
     g.run()
     print("user quit (0)")
